@@ -23,6 +23,14 @@ import argparse
 """
 
 # functions:
+
+# write to cutom file:
+def write_to_custom_file(output_fname_custom, line):
+    with open(output_fname_custom, 'a') as f:
+        f.write(line)
+    f.close()
+
+
 def read_agents_fname(agents_fname):
     start_and_goal_can_be_at_same_loc = True
     delta = 0
@@ -309,6 +317,13 @@ output_fname = folder_name + str(number_of_agents) + "agents/lifelong/Output_lif
 if create_top_sort_priorities:
     output_fname = output_fname[:-4]+"_total_from_top_sort.csv"
 # output_fname = folder_name + str(number_of_agents) + "agents/lifelong/Output_lifelong_sorting_"+str(number_of_agents)+"_PBS-"+str(J)+"exPBS+BLDFS_w="+str(window_size)+"-h="+str(h)+"_batch"+".csv"
+print(f'output_fname = {output_fname}')
+
+
+print(f'output_fname = {output_fname}')
+output_fname_custom = folder_name + str(number_of_agents) + "agents/lifelong/Depth_limit"+str(number_of_agents)+"delta-"+str(J)+"+WL-DFS_w="+str(window_size)+"-h="+str(h)+"_ell="+l+"_p="+str(p)+"__.csv"
+print(f'output_fname_custom = {output_fname_custom}')
+
 throughput_PBS = 0
 throughput_exPBS = 0
 
@@ -514,6 +529,12 @@ else:  # exRHCR, J!=0
             status = subprocess.call(pbs_with_experience, shell=True)
             delta_T = time.time()-t0
             print(f'subprocess delta_T  {time.time()-t0}')
+
+            
+            # write time to custom file:
+            write_to_custom_file(output_fname_custom, f'{delta_T}, {agent_fname_expbs}, {J}, {w_exPBS}, {l}, {h}, {steps_done}\n')
+            avg_runtime_custom += delta_T
+
             if delta_T > 30:
                 print('\n\n\n BREAK - large runtime\n\n\n')
                 exit()

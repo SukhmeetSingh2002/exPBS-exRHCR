@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
 				fixed_prior = true;
 			}
             /////// priority = 2 + ICBS/CBSH - use this for exPBS! //////////////
-			GICBSSearch icbs(ml, al, 1.0, egr, s, initial_priorities, fallback_priorities, vm["experience"].as<int>(), vm["fallback"].as<double>(), vm["width_limit_hl"].as<int>(), vm["windowed_mapf"].as<int>(), fixed_prior, 3, 1);
+			GICBSSearch icbs(ml, al, 1.0, egr, s, initial_priorities, fallback_priorities, vm["experience"].as<int>(), vm["fallback"].as<double>(), vm["width_limit_hl"].as<int>(), vm["windowed_mapf"].as<int>(), fixed_prior, 5, 1);
             // GICBS + fixed=False for PBS //  added initial_priorities as input
             // GICBSSearch icbs(ml, al, 1.0, egr, s, initial_priorities, fallback_priorities, vm["experience"].as<int>(), vm["fallback"].as<double>(), vm["width_limit_hl"].as<int>(), vm["windowed_mapf"].as<int>(), fixed_prior, 10, 0);
 

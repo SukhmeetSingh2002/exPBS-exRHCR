@@ -23,6 +23,13 @@ import argparse
 """
 
 # functions:
+
+# write to cutom file:
+def write_to_custom_file(output_fname_custom, line):
+    with open(output_fname_custom, 'a') as f:
+        f.write(line)
+    f.close()
+
 def read_agents_fname(agents_fname):
 
     with open(agents_fname, 'r') as f:
@@ -297,7 +304,7 @@ parser.add_argument("-c", "--create_and_save", help="create and save test")
 parser.add_argument("-l", "--ell_for_WLDFS", help="create and save test")
 parser.add_argument("-r", "--replan_rate", help="RHCR \ exRHCR replan rate")
 parser.add_argument("-p", "--priority", help="total priority ordering (3) or not (2)")
-parser.add_argument("--height_limit", help="height limit for PBS")
+# parser.add_argument("--height_limit", help="height limit for PBS")
 
 args = parser.parse_args()
 number_of_agents = int(args.num_of_agent)
@@ -307,7 +314,7 @@ l = args.ell_for_WLDFS
 create_and_save = int(args.create_and_save)
 h = int(args.replan_rate)
 p = int(args.priority)  # should be 3 (total priority ordering) or 2 (regular)
-height_limit = int(args.height_limit)
+# height_limit = int(args.height_limit)
 
 if p not in [2,3]:
     ValueError('priority should be = 2 or 3 ')
@@ -318,6 +325,11 @@ window_size = 10    # RHCR, PBS only
 # h=5                 # RHCR, PBS only
 # J = 2  # PBS --> J*exPBS  (delta)
 output_fname = folder_name + str(number_of_agents) + "agents/lifelong/Output_lifelong_kiva_"+str(number_of_agents)+"delta-"+str(J)+"+WL-DFS_w="+str(window_size)+"-h="+str(h)+"_ell="+l+"_p="+str(p)+"__.csv"
+print(f'output_fname = {output_fname}')
+output_fname_custom = folder_name + str(number_of_agents) + "agents/lifelong/Depth_limit"+str(number_of_agents)+"delta-"+str(J)+"+WL-DFS_w="+str(window_size)+"-h="+str(h)+"_ell="+l+"_p="+str(p)+"__.csv"
+print(f'output_fname_custom = {output_fname_custom}')
+
+avg_runtime_custom = 0
 
 if create_top_sort_priorities:
     output_fname = output_fname[:-4]+"_total_from_top_sort.csv"
@@ -535,6 +547,11 @@ else:  # delta != 0
             status = subprocess.call(pbs_with_experience, shell=True)
             delta_T = time.time()-t0
             print(f'subprocess delta_T  {time.time()-t0}')
+
+            # write time to custom file:
+            write_to_custom_file(output_fname_custom, f'{delta_T}, {agent_fname_expbs}, {J}, {w_exPBS}, {l}, {h}, {steps_done}\n')
+            avg_runtime_custom += delta_T
+            
             if delta_T > 30:
                 print('\n\n\n BREAK - large runtime\n\n\n')
                 exit()
@@ -552,6 +569,12 @@ with open(output_fname, 'a') as f:
             f'\n\n')
 
 f.close()
+
+
+# wrtie avg runtime to custom file:
+write_to_custom_file(output_fname_custom, f'avg_runtime_custom = {avg_runtime_custom/(total_step_limit/h)}\n')
+
+print(f'[MYCODE]: avg_runtime_custom = {avg_runtime_custom/(total_step_limit/h)}')
 
 print(f'throughput PBS = {throughput_PBS}')
 print(f'throughput exPBS = {throughput_exPBS}')
