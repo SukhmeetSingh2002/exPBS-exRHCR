@@ -952,6 +952,7 @@ bool GICBSSearch::runGICBSSearch()
 
             if (search_with_experience and !fallbacked_to_original_pbs and max_elem_in_depth_appearance_dict->second >= HL_DFS_width_limit ) { // P_exp1 failed, width violation
             // if (search_with_experience and !fallbacked_to_original_pbs and HL_num_expanded >= 100) { // P_exp1 failed + limit HL node expanded //
+			write_fallback_count(read_fallback_count() + 1);
 
                 if (!is_fallback_used){ // P_exp1 failed + P_exp2 didn't used yet
                     cout << endl << "depth "<< max_elem_in_depth_appearance_dict->first << " is used " << HL_DFS_width_limit

@@ -17,6 +17,7 @@
 #include <algorithm>
 #include<boost/tokenizer.hpp>
 #include <fstream>
+#include <thread>
 
 #include "utils_functions.h"
 
@@ -614,4 +615,29 @@ void print_bool_matrix(const vector< vector<bool> > a){
         }
         cout << endl;
     }
+}
+
+int read_fallback_count(){
+    int value;
+    std::ifstream file("./fallback_count.txt");
+    if (file.is_open()) {
+        file >> value;
+        file.close();
+    } else {
+        std::cerr << "Error opening file for reading.\n";
+        std::exit(1);
+    }
+    return value;
+}
+
+void write_fallback_count(int value){
+    std::ofstream file("./fallback_count.txt");
+    if (file.is_open()) {
+        file << value;
+        file.close();
+    } else {
+        std::cerr << "Error opening file for writing.\n";
+        std::exit(1);
+    }
+    cout<<"COMPLETED WRITING FALLBACK_COUNT VALUE = "<<value<<endl;
 }

@@ -16,6 +16,7 @@ from tqdm import tqdm
 import time
 import click
 import argparse
+from fallback_count import *
 
 """
     run this code using the line:
@@ -468,6 +469,8 @@ else:  # delta != 0
 
 
     while steps_done < total_step_limit:
+        #initialize fallback_count every time a new experience is generated.
+        set_fallback_count(0)
         # # read agents start and goal locations:
         # _, agent_start_dict, agent_goal_dict = read_agents_fname(agents_fname=agent_fname_expbs)
         print(f'\n\trun number = {int(steps_done/h+1)} / {int(total_step_limit/h)},\t\t now running PBS')
@@ -503,6 +506,9 @@ else:  # delta != 0
         # we solve it by inserting only PBS agents file which will be chosen because its the only one
         # input(f'pbs... check {agent_fname_expbs}')
         for _ in range(J):  # run J exPBS after 1 PBS
+            if read_fallback_count() >= J/2:
+                print("FALLBACK COUNT EXCEEDED DELTA/2: GENERATE NEW EXPERIENCE USING ORIGINAL PBS")
+                break
             if steps_done >= total_step_limit:
                 break
             widths = [-1, 10]

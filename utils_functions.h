@@ -37,3 +37,6 @@ void NearestQuery(const int given_priorities_fname, const vector<vector<int>> Da
 #endif //PBS_EXPERIENCE_UTILS_FUNCTIONS_H
 
 void print_bool_matrix(const vector< vector<bool> > a);
+
+int read_fallback_count();
+void write_fallback_count(int value);
