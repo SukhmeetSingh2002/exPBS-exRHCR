@@ -79,6 +79,9 @@ public:
     bool first_experience_failed = false;
     int number_of_fallback_upward = 0;
     int HL_DFS_width_limit;
+	int HL_DFS_height_limit;
+	int HL_DFS_height_limit_global;	
+	int HL_DFS_height_limit_increment;	
     int window_size = -1; // for windowed-MAPF queries, solve conflicts for window_size steps (-1 means regular MAPF)
     int depth_to_jump_back = -1;
 
@@ -88,6 +91,8 @@ public:
     int max_breadth = 0;
 	vector < SingleAgentICBS* > search_engines;  // used to find (single) agents' paths and mdd
 	bool runGICBSSearch();
+	bool runGICBSSearchWrapper(const MapLoader& ml, const AgentsLoader& al, double f_w, const EgraphReader& egr, constraint_strategy c, const vector < vector< bool > > initial_priorities, const vector < vector< bool > > fallback_priorities, const int experience, const double fallback, const int width_limit, const int window_size_,  bool fixed_prior = false, const int height_limit=-1, const int start_height_limit=-1);
+	void resetGICBSSearch(const MapLoader& ml, const AgentsLoader& al, double f_w, const EgraphReader& egr, constraint_strategy c, const vector < vector< bool > > initial_priorities, const vector < vector< bool > > fallback_priorities, const int experience, const double fallback, const int width_limit, const int window_size_,  bool fixed_prior = false, const int height_limit=-1, const int start_height_limit=-1);
     void create_trans_priorities(vector<vector<bool>> priorities_matrix, vector<vector<bool>> *trans_priorities);
     bool is_adding_a_higher_than_b_legal(vector<vector<bool>> priorities_matrix, int a_id, int b_id);
 	bool findPathForSingleAgent(GICBSNode*  node, int ag, double lowerbound = 0);
@@ -113,7 +118,7 @@ public:
 	void printConflicts(const GICBSNode &n) const;
 	void printConstraints(const GICBSNode* n) const;
 	// GICBSSearch(const MapLoader& ml, const AgentsLoader& al, double f_w, const EgraphReader& egr, constraint_strategy c, const vector < vector< bool > > initial_priorities, const vector < vector< bool > > fallback_priorities, const bool use_experience, const bool use_clean, bool fixed_prior = false);
-	GICBSSearch(const MapLoader& ml, const AgentsLoader& al, double f_w, const EgraphReader& egr, constraint_strategy c, const vector < vector< bool > > initial_priorities, const vector < vector< bool > > fallback_priorities, const int experience, const double fallback, const int width_limit, const int window_size_,  bool fixed_prior = false);
+	GICBSSearch(const MapLoader& ml, const AgentsLoader& al, double f_w, const EgraphReader& egr, constraint_strategy c, const vector < vector< bool > > initial_priorities, const vector < vector< bool > > fallback_priorities, const int experience, const double fallback, const int width_limit, const int window_size_,  bool fixed_prior = false, const int height_limit=-1, const int start_height_limit=-1);
 	~GICBSSearch();
 };
 

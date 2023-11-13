@@ -297,6 +297,8 @@ parser.add_argument("-c", "--create_and_save", help="create and save test")
 parser.add_argument("-l", "--ell_for_WLDFS", help="create and save test")
 parser.add_argument("-r", "--replan_rate", help="RHCR \ exRHCR replan rate")
 parser.add_argument("-p", "--priority", help="total priority ordering (3) or not (2)")
+parser.add_argument("--height_limit", help="height limit for PBS")
+
 args = parser.parse_args()
 number_of_agents = int(args.num_of_agent)
 J = int(args.delta)# PBS --> J*exPBS  (delta)
@@ -305,6 +307,8 @@ l = args.ell_for_WLDFS
 create_and_save = int(args.create_and_save)
 h = int(args.replan_rate)
 p = int(args.priority)  # should be 3 (total priority ordering) or 2 (regular)
+height_limit = int(args.height_limit)
+
 if p not in [2,3]:
     ValueError('priority should be = 2 or 3 ')
 

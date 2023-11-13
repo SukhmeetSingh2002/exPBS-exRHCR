@@ -950,8 +950,13 @@ bool GICBSSearch::runGICBSSearch()
                 is_fallback_used = true;  // --> do not use P_exp2, and jump straight to original PBS
             }
 
-            if (search_with_experience and !fallbacked_to_original_pbs and max_elem_in_depth_appearance_dict->second >= HL_DFS_width_limit ) { // P_exp1 failed, width violation
+            // if (search_with_experience and !fallbacked_to_original_pbs and max_elem_in_depth_appearance_dict->second >= HL_DFS_width_limit ) { // P_exp1 failed, width violation
+			// height violation
+			if (search_with_experience and !fallbacked_to_original_pbs and curr->depth >= HL_DFS_height_limit_global) { // P_exp1 failed, height violation
             // if (search_with_experience and !fallbacked_to_original_pbs and HL_num_expanded >= 100) { // P_exp1 failed + limit HL node expanded //
+
+				// global depth limit exceeded - use original PBS
+				cout << endl << "[MYCODE]: depth "<< max_elem_in_depth_appearance_dict->first << " is used " << HL_DFS_width_limit << " times with P_exp1- use original PBS..." << endl;					
 
                 if (!is_fallback_used){ // P_exp1 failed + P_exp2 didn't used yet
                     cout << endl << "depth "<< max_elem_in_depth_appearance_dict->first << " is used " << HL_DFS_width_limit
@@ -1133,7 +1138,8 @@ bool GICBSSearch::runGICBSSearch()
 
 
 
-		if (gen_n1) {
+		// generate child if current depth is smaller than max depth
+		if (gen_n1 and (curr->depth <= HL_DFS_height_limit or fallbacked_to_original_pbs)) {
             n1->priorities = vector < vector < bool >> (curr->priorities);
             n1->trans_priorities = vector < vector < bool >> (curr->trans_priorities);
 
@@ -1168,7 +1174,7 @@ bool GICBSSearch::runGICBSSearch()
 		paths = copy;
 
 		//updatePaths(curr);
-		if (gen_n2) {
+		if (gen_n2 and (curr->depth <= HL_DFS_height_limit or fallbacked_to_original_pbs)) {
             n2->priorities = vector < vector < bool >> (curr->priorities);
             n2->trans_priorities = vector < vector < bool >> (curr->trans_priorities);
             n2->priorities[n1->agent_id][n2->agent_id] = true; // a1->a2, a1 before a2
@@ -1275,18 +1281,295 @@ bool GICBSSearch::runGICBSSearch()
 	//    printPaths();
 	if (open_list.empty() && solution_cost < 0 && !(runtime > TIME_LIMIT)) {  // search fail, not runtime failure
 
-
-            solution_cost = -2;
+			// set solution cost = -2 only if depth limit is = global depth limit
+			if (HL_DFS_height_limit == HL_DFS_height_limit_global and fallbacked_to_original_pbs) {
+            	solution_cost = -2;
+			}
             cout << "No solutions  ; " << solution_cost << " ; " << min_f_val - dummy_start->g_val << " ; " <<
                  HL_num_expanded << " ; " << HL_num_generated << " ; " <<
                  LL_num_expanded << " ; " << LL_num_generated << " ; " << runtime << " ; " <<
                  "|Open|=" << open_list.size() << endl;
+			cout<< "[MYCODE]: last Depth is " << HL_DFS_height_limit << endl;
             solution_found = false;
 
     }
 
 	return solution_found;
 }
+
+bool GICBSSearch::runGICBSSearchWrapper(const MapLoader& ml, const AgentsLoader& al, double f_w, const EgraphReader& egr, constraint_strategy c, const vector < vector< bool > > initial_priorities, const vector < vector< bool > > fallback_priorities, const int experience, const double fallback, const int width_limit, const int window_size_, bool fixed_prior, int height_limit, int start_height_limit)
+{
+	// run iterative search until find a solution with increasing the depth limit
+	// if found a solution - return true, else return false
+	// HL_DFS_height_limit_global = height_limit;
+	// HL_DFS_height_limit = 1;
+	// HL_DFS_height_limit_increment = 1;
+	
+	bool my_solution_found = false;
+	cout << "[MYCODE]: Running GICBS with height limit " << HL_DFS_height_limit << endl;
+	cout << "[MYCODE]: Running GICBS with height limit increment " << HL_DFS_height_limit_increment << endl;
+	cout << "[MYCODE]: Running GICBS with height limit global " << HL_DFS_height_limit_global << endl;
+	while (!my_solution_found && HL_DFS_height_limit <= HL_DFS_height_limit_global) {
+		my_solution_found = runGICBSSearch();
+		HL_DFS_height_limit += HL_DFS_height_limit_increment;
+		if (!my_solution_found) {
+			cout << "[MYCODE]: No solution found with height limit " << HL_DFS_height_limit << endl;
+
+			// open list is empty so we need to reset all variables, run resetGICBSSearch
+			resetGICBSSearch(ml, al, f_w, egr, c, initial_priorities, fallback_priorities, experience, fallback, width_limit, window_size_, fixed_prior, HL_DFS_height_limit_global, HL_DFS_height_limit);
+
+		}
+		else {
+			cout << "[MYCODE]: Solution found with height limit " << HL_DFS_height_limit << endl;
+		}
+		cout << "[MYCODE]: my_solution_found = " << my_solution_found << ", HL_DFS_height_limit = " << HL_DFS_height_limit << ", HL_DFS_height_limit_increment = " << HL_DFS_height_limit_increment << ", HL_DFS_height_limit_global = " << HL_DFS_height_limit_global << endl;
+	}
+
+	return my_solution_found;
+
+}
+
+void GICBSSearch::resetGICBSSearch(const MapLoader& ml, const AgentsLoader& al, double f_w, const EgraphReader& egr, constraint_strategy c, const vector < vector< bool > > initial_priorities, const vector < vector< bool > > fallback_priorities, const int experience, const double fallback, const int width_limit, const int window_size_, bool fixed_prior, int height_limit, int start_height_limit)
+{
+    window_size = window_size_;
+    fallback_option = fallback;
+    // HL_DFS_width_limit = width_limit;
+	// HL_DFS_height_limit_global = height_limit;
+	// HL_DFS_height_limit = start_height_limit;
+	// HL_DFS_height_limit_increment = 1;
+    experience_strategy = experience;
+    if (experience > 0){
+        search_with_experience = true;
+    }
+    else{
+        search_with_experience = false;
+    }
+
+    if (experience == 2) {  // experience + clean priorities matrix
+        clean_experience = true;
+    }
+    else{
+        clean_experience = false;
+    }
+
+    // search_with_experience = use_experience;
+    // use_original_pbs = !search_with_experience;
+	cons_strategy = c;
+	//focal_w = f_w;
+	HL_num_expanded = 0;
+	HL_num_generated = 0;
+	LL_num_expanded = 0;
+	LL_num_generated = 0;
+
+
+	this->num_col = ml.cols;
+	this->al = al;
+	num_of_agents = al.num_of_agents;
+	map_size = ml.rows*ml.cols;
+	solution_found = false;
+	solution_cost = -1;
+	//ll_min_f_vals = vector <double>(num_of_agents);
+	//paths_costs = vector <double>(num_of_agents);
+	//ll_min_f_vals_found_initially = vector <double>(num_of_agents);
+	//paths_costs_found_initially = vector <double>(num_of_agents);
+	search_engines = vector < SingleAgentICBS* >(num_of_agents);
+	for (int i = 0; i < num_of_agents; i++) {
+		int init_loc = ml.linearize_coordinate((al.initial_locations[i]).first, (al.initial_locations[i]).second);
+		int goal_loc = ml.linearize_coordinate((al.goal_locations[i]).first, (al.goal_locations[i]).second);
+		ComputeHeuristic ch(init_loc, goal_loc, ml.get_map(), ml.rows, ml.cols, ml.moves_offset, ml.actions_offset, 1.0, &egr);
+		search_engines[i] = new SingleAgentICBS(i, init_loc, goal_loc, ml.get_map(), ml.rows*ml.cols,
+			ml.moves_offset, ml.cols);
+		ch.getHVals(search_engines[i]->my_heuristic);
+	}
+
+	// initialize allNodes_table (hash table)
+	//empty_node = new GICBSNode();
+
+	//empty_node->time_generated = -2; empty_node->agent_id = -2;
+	//deleted_node = new GICBSNode();
+	//deleted_node->time_generated = -3; deleted_node->agent_id = -3;
+	//allNodes_table.set_empty_key(empty_node);
+	//allNodes_table.set_deleted_key(deleted_node);
+
+
+	dummy_start = new GICBSNode();
+	empty_priority_node = new GICBSNode(); ///*************************************///
+    fallback_node = new GICBSNode(); ///*************************************///
+
+	dummy_start->agent_id = -1;
+    empty_priority_node->agent_id = -1; ///*************************************///
+    fallback_node->agent_id = -1; ///*************************************///
+
+                                                // vector of vector (size rows, vector inside(size cols, value col)
+
+	dummy_start->priorities = vector<vector<bool>>(num_of_agents, vector<bool>(num_of_agents, false)); //  - : initial for false matrix and change it to initial_priority later
+    empty_priority_node->priorities = vector<vector<bool>>(num_of_agents, vector<bool>(num_of_agents, false)); //  - initial for false matrix and change it to initial_priority later
+    fallback_node->priorities = vector<vector<bool>>(num_of_agents, vector<bool>(num_of_agents, false)); //  - initial for false matrix and change it to initial_priority later
+
+	dummy_start->trans_priorities = vector<vector<bool>>(num_of_agents, vector<bool>(num_of_agents, false)); //  - initial for false matrix and change it to initial_priority later
+    empty_priority_node->trans_priorities = vector<vector<bool>>(num_of_agents, vector<bool>(num_of_agents, false)); //  -  initial for false matrix and change it to initial_priority later
+    fallback_node->trans_priorities = vector<vector<bool>>(num_of_agents, vector<bool>(num_of_agents, false)); //  - initial for false matrix and change it to initial_priority later
+    ///*************************************///
+	if(fixed_prior) { // this is from original PBS implementation - using fixed priority ordering
+        cout << "Running PBS with fixed total priority ordering" << endl;
+        for (int i = 0; i < num_of_agents - 1; i++) {
+			dummy_start->priorities[i][i + 1] = true;
+			// dummy_start->trans_priorities[i][i + 1] = true;
+			for (int j = i; j < num_of_agents - 1; j++) {
+				dummy_start->trans_priorities[i][j + 1] = true;
+				// dummy_start->priorities[i][j + 1] = true;
+			}
+		}
+	}
+
+    /////////////////////////////////////////////////////////////////////
+	 else {                                                 // : added given priorities
+        dummy_start->trans_priorities = initial_priorities;
+        fallback_node->trans_priorities = fallback_priorities;
+        dummy_start->priorities = initial_priorities;
+        fallback_node->priorities = fallback_priorities;
+        // create_trans_priorities(dummy_start->priorities , &dummy_start->trans_priorities);
+        // create_trans_priorities(fallback_node->priorities , &fallback_node->trans_priorities);
+	 } // end else
+    /////////////////////////////////////////////////////////////////////
+
+	// initialize paths_found_initially
+	paths.resize(num_of_agents, NULL);
+	paths_found_initially.resize(num_of_agents);
+
+	clock_t start_t = std::clock();
+
+	for (int i = 0; i < num_of_agents; i++) { //  - Low-level, find path for each agent
+	    /*
+		//    cout << "Computing initial path for agent " << i << endl; fflush(stdout);
+		//bool* res_table = new bool[map_size * (dummy_start->makespan + 1)]();  // initialized to false
+		//bool* res_table_low_prio = new bool[map_size * (dummy_start->makespan + 1)]();  // initialized to false
+		//updateReservationTable(res_table, res_table_low_prio, i, *dummy_start);
+		//cout << "*** CALCULATING INIT PATH FOR AGENT " << i << ". Reservation Table[MAP_SIZE x MAX_PLAN_LEN]: " << endl;
+		//printResTable(res_table, max_plan_len);
+	     */
+	    // cout << "agent " << i << endl;
+
+        size_t max_Plan_length = window_size > 0 ? window_size : dummy_start->makespan + 1;
+
+        if (search_engines[i]->findPath(paths_found_initially[i], f_w, dummy_start->trans_priorities, paths, max_Plan_length, 0) == false) {
+            cout << "========"<< endl;
+            if (search_with_experience) {
+                cout << "NO solution founded with first experience... trying fallback experience..." << endl;
+                first_experience_failed = true;
+                fallback_option = 0 ;
+                HL_DFS_width_limit = -1;
+            }
+            else {  // original PBS
+                // cout << "NO SOLUTION EXISTS";
+                // solution_cost = -2;
+                if (fixed_prior){
+                    cout << "NO SOLUTION FOUNDED with TOTAL PRIORITY, run original PBS instead" << endl;
+
+                    fallback_option = 0 ;
+                    HL_DFS_width_limit = -3;   // mark that no solution have founded using total priority ordering
+                    fallback_option = 0 ;
+                    first_experience_failed = true;
+                    // fallback_option == 2;
+                }
+                else {
+                    cout << "NO SOLUTION EXISTS";
+                    solution_cost = -2;
+                }
+            }
+            break;
+		}
+		//dummy_start->paths[i] = search_engines[i]->getPath();
+		paths[i] = &paths_found_initially[i];
+		dummy_start->makespan = max(dummy_start->makespan, paths_found_initially[i].size() - 1);
+        fallback_node->makespan = max(fallback_node->makespan, paths_found_initially[i].size() - 1);
+        empty_priority_node->makespan = max(empty_priority_node->makespan, paths_found_initially[i].size() - 1);
+		//search_engines[i]->path.reset();
+		//ll_min_f_vals_found_initially[i] = search_engines[i]->min_f_val;
+		//paths_costs_found_initially[i] = search_engines[i]->path_cost;
+		LL_num_expanded += search_engines[i]->num_expanded;
+		LL_num_generated += search_engines[i]->num_generated;
+		//delete[] res_table;
+		//    cout << endl;
+	}
+    // cout << "success to find paths in root node" << endl;
+	if (first_experience_failed) { // try fallback
+        // LL_num_expanded = 0;
+        // LL_num_generated = 0;
+
+        size_t max_Plan_length_fb_node = window_size > 0 ? window_size : fallback_node->makespan + 1;
+
+        for (int i = 0; i < num_of_agents; i++) { //  - Low-level, find path for each agent
+            if (search_engines[i]->findPath(paths_found_initially[i], f_w, fallback_node->trans_priorities, paths, max_Plan_length_fb_node, 0) == false) {
+                cout << "NO SOLUTION EXISTS - with fallback experience also";
+                solution_cost = -2;
+                break;
+            }
+
+            paths[i] = &paths_found_initially[i];
+            dummy_start->makespan = max(dummy_start->makespan, paths_found_initially[i].size() - 1);
+            fallback_node->makespan = max(fallback_node->makespan, paths_found_initially[i].size() - 1);
+            empty_priority_node->makespan = max(empty_priority_node->makespan, paths_found_initially[i].size() - 1);
+            LL_num_expanded += search_engines[i]->num_expanded;
+            LL_num_generated += search_engines[i]->num_generated;
+
+            // only if first_experience_failed = true. make sure that first priorities not used
+            dummy_start->priorities = fallback_priorities;
+            dummy_start->trans_priorities = fallback_priorities;
+        }
+	}
+
+	//ll_min_f_vals = ll_min_f_vals_found_initially;
+	//paths_costs = paths_costs_found_initially;
+
+	// generate dummy start and update data structures
+
+	if (solution_cost != -2) {
+
+		dummy_start->g_val = 0;
+        fallback_node->g_val = 0;
+        empty_priority_node->g_val = 0;
+		for (int i = 0; i < num_of_agents; i++) {
+		    dummy_start->g_val += paths[i]->size() - 1;
+            empty_priority_node->g_val += paths[i]->size() - 1;
+            fallback_node->g_val += paths[i]->size() - 1;
+        }
+		dummy_start->h_val = 0;
+        fallback_node->h_val = 0;
+        empty_priority_node->h_val = 0;
+		dummy_start->f_val = dummy_start->g_val;
+        fallback_node->f_val = fallback_node->g_val;
+        empty_priority_node->f_val = empty_priority_node->g_val;
+		//dummy_start->ll_min_f_val = 0;
+		dummy_start->depth = 0;
+        fallback_node->depth = 0;
+        empty_priority_node->depth = 0;
+
+
+		//  - : push first a node with empty initial priority to be used in case of fail to find solution with experience //
+		// note - practically, when it fail the search didn't came back to this node...
+        open_list.push(empty_priority_node);
+
+
+        dummy_start->open_handle = open_list.push(dummy_start);
+		//dummy_start->focal_handle = focal_list.push(dummy_start);
+		//dummy_start->single.resize(num_of_agents);
+		//dummy_start->constraints.resize(num_of_agents);
+		HL_num_generated++;
+		dummy_start->time_generated = HL_num_generated;
+		allNodes_table.push_back(dummy_start);
+		findConflicts(*dummy_start);
+		//initial_g_val = dummy_start->g_val;
+		min_f_val = dummy_start->f_val;
+		focal_list_threshold = min_f_val * focal_w;
+
+		//  cout << "Paths in START (high-level) node:" << endl;
+		//  printPaths();
+		// cout << "SUM-MIN-F-VALS: " << dummy_start->sum_min_f_vals << endl;
+	}
+	pre_runtime = std::clock() - start_t;
+}
+
 
 void GICBSSearch::create_trans_priorities(vector<vector<bool>> priorities_matrix, vector<vector<bool>> *trans_priorities) {
     vector<vector<bool>> trans_priorities_matrix;
@@ -1338,11 +1621,14 @@ bool GICBSSearch::is_adding_a_higher_than_b_legal(vector<vector<bool>> prioritie
 
 
 // GICBSSearch::GICBSSearch(const MapLoader& ml, const AgentsLoader& al, double f_w, const EgraphReader& egr, constraint_strategy c, const vector < vector< bool > > initial_priorities, const vector < vector< bool > > fallback_priorities, const bool use_experience, const bool use_clean, bool fixed_prior): focal_w(f_w), fixed_prior(fixed_prior)
-GICBSSearch::GICBSSearch(const MapLoader& ml, const AgentsLoader& al, double f_w, const EgraphReader& egr, constraint_strategy c, const vector < vector< bool > > initial_priorities, const vector < vector< bool > > fallback_priorities, const int experience, const double fallback, const int width_limit, const int window_size_, bool fixed_prior): focal_w(f_w), fixed_prior(fixed_prior)
+GICBSSearch::GICBSSearch(const MapLoader& ml, const AgentsLoader& al, double f_w, const EgraphReader& egr, constraint_strategy c, const vector < vector< bool > > initial_priorities, const vector < vector< bool > > fallback_priorities, const int experience, const double fallback, const int width_limit, const int window_size_, bool fixed_prior, int height_limit, int start_height_limit): focal_w(f_w), fixed_prior(fixed_prior)
 {
     window_size = window_size_;
     fallback_option = fallback;
     HL_DFS_width_limit = width_limit;
+	HL_DFS_height_limit_global = height_limit;
+	HL_DFS_height_limit = start_height_limit;
+	HL_DFS_height_limit_increment = 1;
     experience_strategy = experience;
     if (experience > 0){
         search_with_experience = true;

@@ -54,6 +54,8 @@ int main(int argc, char** argv) {
 		("to_save_P_matrix,x", po::value<int>()->default_value(0), "0 or 1, default 0, set 1 to create _.priorities file (save priorities matrix as txt file, if solution exist)")
 		("windowed_mapf,w", po::value<int>()->default_value(-1), "solve regular MAPF if w=-1 (default) or windowed-MAPF with window size w as given")
 		("frequency_mapd,h", po::value<int>()->default_value(-1), "replaning frequency for MAPD (-1 do nothing)")
+        // ("height_limit_hl,hl", po::value<int>()->default_value(-1), "high-level WL-DFS height limit (default -1, means no limit)")
+        
 
 	;
 
@@ -105,6 +107,13 @@ int main(int argc, char** argv) {
     if (vm["fallback"].as<double>() == 0 and vm["width_limit_hl"].as<int>()  != -1 ) {
         throw invalid_argument("\n\n*** ERROR! INVALID INPUT: got HL width limit (!=-1) but no fallback (==0) ***\n\n" );
     }
+    // if (vm["fallback"].as<double>() != 0 and vm["hright_limit_hl"].as<int>()  <= 1 ) {
+    //     throw invalid_argument("\n\n*** ERROR! INVALID INPUT: got fallback input (!=0) without HL height limit (<=1) ***\n\n" );
+    // }
+
+    // if (vm["fallback"].as<double>() == 0 and vm["hright_limit_hl"].as<int>()  != -1 ) {
+    //     throw invalid_argument("\n\n*** ERROR! INVALID INPUT: got HL width limit (!=-1) but no fallback (==0) ***\n\n" );
+    // }
 
     if (vm["fallback"].as<double>() < -1) {
         throw invalid_argument("\n\n*** ERROR! INVALID INPUT: fallback option should be greater than -1 ***\n\n" );
@@ -241,11 +250,52 @@ int main(int argc, char** argv) {
 				fixed_prior = true;
 			}
             /////// priority = 2 + ICBS/CBSH - use this for exPBS! //////////////
-			GICBSSearch icbs(ml, al, 1.0, egr, s, initial_priorities, fallback_priorities, vm["experience"].as<int>(), vm["fallback"].as<double>(), vm["width_limit_hl"].as<int>(), vm["windowed_mapf"].as<int>(), fixed_prior); // GICBS + fixed=False for PBS //  added initial_priorities as input
-            /////////////////////////////////////////////////////////////////////
-			bool res;
+			GICBSSearch icbs(ml, al, 1.0, egr, s, initial_priorities, fallback_priorities, vm["experience"].as<int>(), vm["fallback"].as<double>(), vm["width_limit_hl"].as<int>(), vm["windowed_mapf"].as<int>(), fixed_prior, 3, 1);
+            // GICBS + fixed=False for PBS //  added initial_priorities as input
+            // GICBSSearch icbs(ml, al, 1.0, egr, s, initial_priorities, fallback_priorities, vm["experience"].as<int>(), vm["fallback"].as<double>(), vm["width_limit_hl"].as<int>(), vm["windowed_mapf"].as<int>(), fixed_prior, 10, 0);
 
-			res = icbs.runGICBSSearch(); // <--
+            // // run iterative search until find a solution with increasing the depth limit
+            // // if found a solution - return true, else return false
+            // // HL_DFS_height_limit_global = height_limit;
+            // // HL_DFS_height_limit = 1;
+            // // HL_DFS_height_limit_increment = 1;
+            
+            // bool my_solution_found = false;
+            // int HL_DFS_height_limit = 1;
+            // int HL_DFS_height_limit_increment = 1;
+            // // int HL_DFS_height_limit_global = vm["height_limit_hl"].as<int>();
+            // int HL_DFS_height_limit_global = 10;
+            // cout << "[MYCODE]: Running GICBS with height limit " << HL_DFS_height_limit << endl;
+            // cout << "[MYCODE]: Running GICBS with height limit increment " << HL_DFS_height_limit_increment << endl;
+            // cout << "[MYCODE]: Running GICBS with height limit global " << HL_DFS_height_limit_global << endl;
+
+            // while (!my_solution_found && HL_DFS_height_limit <= HL_DFS_height_limit_global) {
+                
+            //     // use deconstructor to reset all variables
+            //     // GICBSSearch
+            //     icbs.~GICBSSearch();
+
+            //     icbs = GICBSSearch(ml, al, 1.0, egr, s, initial_priorities, fallback_priorities, vm["experience"].as<int>(), vm["fallback"].as<double>(), vm["width_limit_hl"].as<int>(), vm["windowed_mapf"].as<int>(), fixed_prior, HL_DFS_height_limit_global, HL_DFS_height_limit);
+			//     my_solution_found = icbs.runGICBSSearch(); // <--
+            //     HL_DFS_height_limit += HL_DFS_height_limit_increment;
+            //     if (!my_solution_found) {
+            //         cout << "[MYCODE]: No solution found with height limit " << HL_DFS_height_limit << endl;
+
+            //         // open list is empty so we need to reset all variables
+
+            //     }
+            //     else {
+            //         cout << "[MYCODE]: Solution found with height limit " << HL_DFS_height_limit << endl;
+            //     }
+            // }
+
+
+
+            /////////////////////////////////////////////////////////////////////
+			// bool res = my_solution_found;
+			bool res = icbs.runGICBSSearchWrapper(ml, al, 1.0, egr, s, initial_priorities, fallback_priorities, vm["experience"].as<int>(), vm["fallback"].as<double>(), vm["width_limit_hl"].as<int>(), vm["windowed_mapf"].as<int>(), fixed_prior, 3, 1);
+            
+
 			if (!icbs.node_stat.empty())
 			{
 				ofstream stats;
