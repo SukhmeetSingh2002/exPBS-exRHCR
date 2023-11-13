@@ -37,3 +37,5 @@ void NearestQuery(const int given_priorities_fname, const vector<vector<int>> Da
 #endif //PBS_EXPERIENCE_UTILS_FUNCTIONS_H
 
 void print_bool_matrix(const vector< vector<bool> > a);
+
+std::vector<std::vector<bool>> place_leaf_at_root   (const std::vector<std::vector<bool>>& priorityMatrix);

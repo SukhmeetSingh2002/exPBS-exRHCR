@@ -79,6 +79,8 @@ public:
     bool first_experience_failed = false;
     int number_of_fallback_upward = 0;
     int HL_DFS_width_limit;
+	int fallbacks_in_current_experience = 0;
+	int delta = 2;
     int window_size = -1; // for windowed-MAPF queries, solve conflicts for window_size steps (-1 means regular MAPF)
     int depth_to_jump_back = -1;
 

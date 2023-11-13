@@ -952,7 +952,27 @@ bool GICBSSearch::runGICBSSearch()
 
             if (search_with_experience and !fallbacked_to_original_pbs and max_elem_in_depth_appearance_dict->second >= HL_DFS_width_limit ) { // P_exp1 failed, width violation
             // if (search_with_experience and !fallbacked_to_original_pbs and HL_num_expanded >= 100) { // P_exp1 failed + limit HL node expanded //
+				fallbacks_in_current_experience++;
+				if(fallbacks_in_current_experience <= 1)
+				{
+					cout << endl << "depth "<< max_elem_in_depth_appearance_dict->first << " is used " << HL_DFS_width_limit
+                         << " times with P_exp1- clean open list and use PLACE LEAF AT ROOT SCHEME..." << endl;
+                    open_list.clear();
+                    curr = new GICBSNode();
+					fallback_node->trans_priorities = place_leaf_at_root(fallback_node->trans_priorities);
+					fallback_node->priorities = place_leaf_at_root(fallback_node->priorities);
+                    fallback_node->open_handle = open_list.push(fallback_node);
+                    fallback_node->time_generated = HL_num_generated;
+                    curr = fallback_node;
+                    open_list.push(fallback_node);
+                    depth_appearance_map.clear();
 
+                    is_fallback_used = true;
+                    first_experience_failed = true ;
+
+                    cout << "       CBSH (PLACE LEAF AT ROOT): ";
+					continue;
+				}
                 if (!is_fallback_used){ // P_exp1 failed + P_exp2 didn't used yet
                     cout << endl << "depth "<< max_elem_in_depth_appearance_dict->first << " is used " << HL_DFS_width_limit
                          << " times with P_exp1- clean open list and use fall back experience P_exp2..." << endl;
@@ -971,7 +991,7 @@ bool GICBSSearch::runGICBSSearch()
                 }
                 else { // P_exp1 and P_exp2 failed - now try original PBS --> used in the paper!!!!
                     cout << endl << "depth "<< max_elem_in_depth_appearance_dict->first << " is used " << HL_DFS_width_limit
-                         << " times with clean open list and use original PBS..." << endl;
+                         << " times with clean open list and use original PBS..." << endl;	
                     open_list.clear();
                     empty_priority_node->depth=max_elem_in_depth_appearance_dict->first;
                     curr = new GICBSNode();

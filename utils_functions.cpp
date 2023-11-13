@@ -615,3 +615,58 @@ void print_bool_matrix(const vector< vector<bool> > a){
         cout << endl;
     }
 }
+
+std::vector<std::vector<bool>> place_leaf_at_root   (const std::vector<std::vector<bool>>& priorityMatrix) {
+    int numNodes = priorityMatrix.size();
+
+    // Find the leaf node with no outgoing edges
+    auto isLeafNode = [numNodes](const std::vector<bool>& row) {
+        return std::count(row.begin(), row.end(), true) == 1;
+    };
+
+    auto leafNodeIt = std::find_if(priorityMatrix.begin(), priorityMatrix.end(), isLeafNode);
+
+    if (leafNodeIt == priorityMatrix.end()) {
+        // Handle the case where no leaf node is found
+        return priorityMatrix; // Return the original matrix
+    }
+
+    int leafNodeIndex = std::distance(priorityMatrix.begin(), leafNodeIt);
+
+    // Find the root node with no incoming edges
+    auto isRootNode = [numNodes, priorityMatrix](int col) {
+        for (int i = 0; i < numNodes; ++i) {
+            if (priorityMatrix[i][col]) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    auto rootNodeIt = std::find_if(priorityMatrix[0].begin(), priorityMatrix[0].end(), isRootNode);
+
+    if (rootNodeIt == priorityMatrix[0].end()) {
+        // Handle the case where no root node is found
+        return priorityMatrix; // Return the original matrix
+    }
+
+    int rootNodeIndex = std::distance(priorityMatrix[0].begin(), rootNodeIt);
+
+    // Create a modified matrix with the leaf node at the root
+    std::vector<std::vector<bool>> modifiedMatrix(numNodes, std::vector<bool>(numNodes, false));
+
+    // Copy the original matrix, replacing the leaf node with the root
+    for (int i = 0; i < numNodes; ++i) {
+        for (int j = 0; j < numNodes; ++j) {
+            if (i == leafNodeIndex) {
+                // Leaf node becomes the new root
+                modifiedMatrix[rootNodeIndex][j] = priorityMatrix[i][j];
+            } else {
+                // Copy other nodes as is
+                modifiedMatrix[i][j] = priorityMatrix[i][j];
+            }
+        }
+    }
+
+    return modifiedMatrix;
+}
