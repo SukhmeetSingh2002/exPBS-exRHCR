@@ -246,6 +246,14 @@ int main(int argc, char** argv) {
 			bool res;
 
 			res = icbs.runGICBSSearch(); // <--
+            
+            // print this res to output file
+            string output_fname = "success_rate.csv";
+            ofstream myfile;
+            myfile.open(output_fname, ios::app);
+            myfile << "success rate," << res << ",experience," << vm["experience"].as<int>() << endl; 
+            myfile.close();
+
 			if (!icbs.node_stat.empty())
 			{
 				ofstream stats;
