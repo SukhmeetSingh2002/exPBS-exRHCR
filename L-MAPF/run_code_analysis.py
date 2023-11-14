@@ -2,7 +2,7 @@ import subprocess
 
 benchmark = 'WAREHOUSE'  # 'WAREHOUSE'
 
-num_agents = [220, 200, 180, 160, 140, 120, 100]  # warehouse
+num_agents = [220, 200, 180, 160, 140, 120, 100].reverse()  # warehouse
 # num_agents = [100]  # warehouse
 # num_agents = [, 450, 400, 350, 300, 250, 200, 150, 100]  # sorting
 
