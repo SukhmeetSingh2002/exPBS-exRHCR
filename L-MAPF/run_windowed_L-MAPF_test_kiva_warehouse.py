@@ -505,7 +505,7 @@ else:  # delta != 0
         check_collisions(agents_fname_=agent_fname_expbs)
         t0 = time.time()
         # ,stdout=subprocess.DEVNULL
-        status = subprocess.call(original_pbs, shell=True)
+        status = subprocess.call(original_pbs, shell=True,stdout=subprocess.DEVNULL)
         delta_T = time.time()-t0
         print(f'subprocess delta_T  {time.time()-t0}')
         if delta_T > 30:
@@ -552,7 +552,7 @@ else:  # delta != 0
             check_collisions(agents_fname_=agent_fname_expbs)
             t0 = time.time()
             # ,stdout=subprocess.DEVNULL
-            status = subprocess.call(pbs_with_experience, shell=True)
+            status = subprocess.call(pbs_with_experience, shell=True,stdout=subprocess.DEVNULL)
             delta_T = time.time()-t0
             print(f'subprocess delta_T  {time.time()-t0}')
 
