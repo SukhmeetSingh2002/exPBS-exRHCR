@@ -1139,73 +1139,77 @@ bool GICBSSearch::runGICBSSearch()
 
 
 		// generate child if current depth is smaller than max depth
-		if (gen_n1 and (curr->depth <= HL_DFS_height_limit or fallbacked_to_original_pbs)) {
-            n1->priorities = vector < vector < bool >> (curr->priorities);
-            n1->trans_priorities = vector < vector < bool >> (curr->trans_priorities);
+		if (gen_n1 ) {
+			if (gen_n1 and (curr->depth <= HL_DFS_height_limit or fallbacked_to_original_pbs) or search_with_experience) {
+				n1->priorities = vector < vector < bool >> (curr->priorities);
+				n1->trans_priorities = vector < vector < bool >> (curr->trans_priorities);
 
-            n1->priorities[n2->agent_id][n1->agent_id] = true; // a2->a1
-            n1->trans_priorities[n2->agent_id][n1->agent_id] = true;
-            for (int i = 0; i < num_of_agents; i++) { // transitivity
+				n1->priorities[n2->agent_id][n1->agent_id] = true; // a2->a1
+				n1->trans_priorities[n2->agent_id][n1->agent_id] = true;
+				for (int i = 0; i < num_of_agents; i++) { // transitivity
 
-                if (n1->trans_priorities[n1->agent_id][i]) {
-                    // i that weaker than n1.agent id, so n2.agent_id is stronger
-                    n1->trans_priorities[n2->agent_id][i] = true;
-                }
-                if (n1->trans_priorities[i][n2->agent_id] && !n1->trans_priorities[i][n1->agent_id]) {
-                    for (int j = 0; j < num_of_agents; j++) {
-                        if (n1->trans_priorities[n1->agent_id][j]) {
-                            n1->trans_priorities[i][j] = true;
-                        }
-                    }
-                }
-            }
+					if (n1->trans_priorities[n1->agent_id][i]) {
+						// i that weaker than n1.agent id, so n2.agent_id is stronger
+						n1->trans_priorities[n2->agent_id][i] = true;
+					}
+					if (n1->trans_priorities[i][n2->agent_id] && !n1->trans_priorities[i][n1->agent_id]) {
+						for (int j = 0; j < num_of_agents; j++) {
+							if (n1->trans_priorities[n1->agent_id][j]) {
+								n1->trans_priorities[i][j] = true;
+							}
+						}
+					}
+				}
 
-        Sol1 = generateChild(n1, curr);
+			Sol1 = generateChild(n1, curr);
 
-        // /*
-        // if generated one node only - do not increase depth
-        if (!gen_n2) {
-            n1->depth--;
-        }
-        // */
+			// /*
+			// if generated one node only - do not increase depth
+			if (!gen_n2) {
+				n1->depth--;
+			}
+			// */
 
-		}  // end if gen_n1
+			}  // end if gen_n1
+		}
 
 		paths = copy;
 
 		//updatePaths(curr);
-		if (gen_n2 and (curr->depth <= HL_DFS_height_limit or fallbacked_to_original_pbs)) {
-            n2->priorities = vector < vector < bool >> (curr->priorities);
-            n2->trans_priorities = vector < vector < bool >> (curr->trans_priorities);
-            n2->priorities[n1->agent_id][n2->agent_id] = true; // a1->a2, a1 before a2
-            n2->trans_priorities[n1->agent_id][n2->agent_id] = true;
-            for (int i = 0; i < num_of_agents; i++) { // transitivity
-                if (n2->trans_priorities[n2->agent_id][i]) {
-                    // i that weaker than n2.agent id, so n1.agent_id is stronger
-                    n2->trans_priorities[n1->agent_id][i] = true;
-                }
-                if (n2->trans_priorities[i][n1->agent_id] && !n2->trans_priorities[i][n2->agent_id]) {
-                    // i is better than n1.agent_id and not better than n2.agent_id
-                    for (int j = 0; j < num_of_agents; j++) {
-                        if (n2->trans_priorities[n2->agent_id][j]) {
-                            //n2.agent_id higher than j
-                            n2->trans_priorities[i][j] = true;
-                        }
-                    }
-                }
-            }
+		if (gen_n2 ){
+			if ((curr->depth <= HL_DFS_height_limit or fallbacked_to_original_pbs) or !search_with_experience) {
+				n2->priorities = vector < vector < bool >> (curr->priorities);
+				n2->trans_priorities = vector < vector < bool >> (curr->trans_priorities);
+				n2->priorities[n1->agent_id][n2->agent_id] = true; // a1->a2, a1 before a2
+				n2->trans_priorities[n1->agent_id][n2->agent_id] = true;
+				for (int i = 0; i < num_of_agents; i++) { // transitivity
+					if (n2->trans_priorities[n2->agent_id][i]) {
+						// i that weaker than n2.agent id, so n1.agent_id is stronger
+						n2->trans_priorities[n1->agent_id][i] = true;
+					}
+					if (n2->trans_priorities[i][n1->agent_id] && !n2->trans_priorities[i][n2->agent_id]) {
+						// i is better than n1.agent_id and not better than n2.agent_id
+						for (int j = 0; j < num_of_agents; j++) {
+							if (n2->trans_priorities[n2->agent_id][j]) {
+								//n2.agent_id higher than j
+								n2->trans_priorities[i][j] = true;
+							}
+						}
+					}
+				}
 
-        Sol2 = generateChild(n2, curr);
+			Sol2 = generateChild(n2, curr);
 
 
-        // /*
-        // if generated one node only - do not increase depth  //  - this is not necessary correct, depends on implementation or HL search manipulations.
-        if (!gen_n1) {  // bug fix from "!gen_n2" to "!gen_n1"
-            n2->depth--;
-        }
-        // */
+			// /*
+			// if generated one node only - do not increase depth  //  - this is not necessary correct, depends on implementation or HL search manipulations.
+			if (!gen_n1) {  // bug fix from "!gen_n2" to "!gen_n1"
+				n2->depth--;
+			}
+			// */
 
-		} // end if gen_n2
+			} // end if gen_n2
+		}
 
 #ifdef DEBUG
 		if(Sol1)

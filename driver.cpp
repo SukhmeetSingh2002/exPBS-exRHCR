@@ -295,6 +295,14 @@ int main(int argc, char** argv) {
 			// bool res = my_solution_found;
 			bool res = icbs.runGICBSSearchWrapper(ml, al, 1.0, egr, s, initial_priorities, fallback_priorities, vm["experience"].as<int>(), vm["fallback"].as<double>(), vm["width_limit_hl"].as<int>(), vm["windowed_mapf"].as<int>(), fixed_prior, 3, 1);
             
+            // print this res to output file
+            string output_fname = "success_rate.csv";
+            ofstream myfile;
+            myfile.open(output_fname, ios::app);
+            myfile << "success rate," << res << ",experience," << vm["experience"].as<int>() << endl; 
+            myfile.close();
+
+
 
 			if (!icbs.node_stat.empty())
 			{
