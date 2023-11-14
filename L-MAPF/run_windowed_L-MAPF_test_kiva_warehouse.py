@@ -26,9 +26,12 @@ import argparse
 
 # write to custom file:
 def write_to_custom_file(output_fname_custom, line):
-    with open(output_fname_custom, 'a') as f:
+    # Create the directory if it doesn't exist
+    os.makedirs(os.path.dirname(output_fname_custom), exist_ok=True)
+
+    # Open the file in append mode, creating it if necessary
+    with open(output_fname_custom, 'a+') as f:
         f.write(line)
-    f.close()
 
 def read_agents_fname(agents_fname):
 
@@ -328,7 +331,8 @@ window_size = 10    # RHCR, PBS only
 # J = 2  # PBS --> J*exPBS  (delta)
 output_fname = folder_name + str(number_of_agents) + "agents/lifelong/Output_lifelong_kiva_"+str(number_of_agents)+"delta-"+str(J)+"+WL-DFS_w="+str(window_size)+"-h="+str(h)+"_ell="+l+"_p="+str(p)+"__.csv"
 print(f'output_fname = {output_fname}')
-output_fname_custom = folder_name + str(number_of_agents) + "agents/lifelong/Depth_limit"+str(number_of_agents)+"delta-"+str(J)+"+WL-DFS_w="+str(window_size)+"-h="+str(h)+"_ell="+l+"_p="+str(p)+"__.csv"
+# +"delta-"+str(J)+"+WL-DFS_w="+str(window_size)+"-h="+str(h)+"_ell="+l+"_p="+str(p)+
+output_fname_custom = "./average_runtime/" + "depth_limit/" + str(number_of_agents) + "agents" + ".csv"
 print(f'output_fname_custom = {output_fname_custom}')
 
 avg_runtime_custom = 0

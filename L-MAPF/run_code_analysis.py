@@ -3,6 +3,7 @@ import subprocess
 benchmark = 'WAREHOUSE'  # 'WAREHOUSE'
 
 num_agents = [220, 200, 180, 160, 140, 120, 100]  # warehouse
+# num_agents = [100]  # warehouse
 # num_agents = [, 450, 400, 350, 300, 250, 200, 150, 100]  # sorting
 
 # deltas = [0, 1, 2]
@@ -22,7 +23,7 @@ if priority not in [2, 3]:
     ValueError('priority should be 2 (regular PBS) or 3 (total priority)')
 
 # queries = [9]
-queries = range(50)
+queries = range(1)
 
 for a in num_agents:
     print(f'%%%%%%%%%%%%%%%%\n num_agents={a}\n%%%%%%%%%%%%%%%%')
