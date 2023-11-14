@@ -64,3 +64,53 @@ for a in num_agents:
                         print(
                             "**************************************\n" + run_str_tot + "\n**************************************\n")
                         status = subprocess.call(run_str_tot, shell=True)
+
+
+    # now read the success_rate.csv file and print the success rate
+    # Example of the file:
+    #   94   │ success rate,1,experience,1
+    #   95   │ success rate,1,experience,1
+    file_data = []
+    with open(f'./success_rate.csv', 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            file_data.append(line.split(','))
+
+    # for each agent, calculate the success rate and store it in a file
+    num_agents = a
+    success_rate = 0
+    success_rate_with_experience = 0
+    total_num_of_experiments = 0
+    total_num_of_experiments_with_experience = 0
+    file_len = len(file_data)
+    for i in range(file_len):
+        if len(file_data[i]) < 4:
+            continue
+        success_rate += int(file_data[i][1])
+        total_num_of_experiments += 1
+        if file_data[i][3] == '1\n':
+            success_rate_with_experience += int(file_data[i][1])
+            total_num_of_experiments_with_experience += 1
+            
+    output_file_name = f'./success_rate_{benchmark}_agents_{num_agents}.csv'
+    with open(output_file_name, 'a') as f:
+        f.write(f'Average success rate,{(success_rate / total_num_of_experiments) * 100}\n')
+        f.write(f'Average success rate with experience,{(success_rate_with_experience / total_num_of_experiments_with_experience) * 100}\n')
+
+        f.write(f'Success count,{success_rate}\n')
+        f.write(f'Total number of experiments,{total_num_of_experiments}\n')
+
+
+        f.write(f'Success count with experience,{success_rate_with_experience}\n')
+        f.write(f'Total number of experiments with experience,{total_num_of_experiments_with_experience}\n')
+
+        f.write(f'Number of agents,{num_agents}\n')
+        f.write(f'Number of queries,{len(queries)}\n')
+        f.write(f'Number of deltas,{len(deltas)}\n')
+        f.write(f'Number of ells,{len(ells)}\n')
+        f.write(f'Number of hs,{len(hs)}\n')
+        
+    # empty the success_rate.csv file
+    with open(f'./success_rate.csv', 'w') as f:
+        f.write('')
+
