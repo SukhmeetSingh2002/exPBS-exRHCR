@@ -24,7 +24,7 @@ import argparse
 
 # functions:
 
-# write to cutom file:
+# write to custom file:
 def write_to_custom_file(output_fname_custom, line):
     with open(output_fname_custom, 'a') as f:
         f.write(line)
@@ -291,6 +291,8 @@ def build_dummy_edb(agents_w_fname):
 ##########################################################################################
 ##########################################################################################
 ##########################################################################################
+# list to store runtimes
+runtime_list = []
 # inputs:
 prefix_dir = '../'
 # prefix_dir = './'
@@ -498,6 +500,7 @@ else:  # delta != 0
         print(original_pbs)
         check_collisions(agents_fname_=agent_fname_expbs)
         t0 = time.time()
+        # ,stdout=subprocess.DEVNULL
         status = subprocess.call(original_pbs, shell=True)
         delta_T = time.time()-t0
         print(f'subprocess delta_T  {time.time()-t0}')
@@ -544,13 +547,15 @@ else:  # delta != 0
             # input(f'ell==?{l}')
             check_collisions(agents_fname_=agent_fname_expbs)
             t0 = time.time()
+            # ,stdout=subprocess.DEVNULL
             status = subprocess.call(pbs_with_experience, shell=True)
             delta_T = time.time()-t0
             print(f'subprocess delta_T  {time.time()-t0}')
 
-            # write time to custom file:
-            write_to_custom_file(output_fname_custom, f'{delta_T}, {agent_fname_expbs}, {J}, {w_exPBS}, {l}, {h}, {steps_done}\n')
-            avg_runtime_custom += delta_T
+            runtime_list.append(delta_T)
+            # # write time to custom file:
+            # write_to_custom_file(output_fname_custom, f'{delta_T}, {agent_fname_expbs}, {J}, {w_exPBS}, {l}, {h}, {steps_done}\n')
+            # avg_runtime_custom += delta_T
             
             if delta_T > 30:
                 print('\n\n\n BREAK - large runtime\n\n\n')
@@ -572,9 +577,11 @@ f.close()
 
 
 # wrtie avg runtime to custom file:
-write_to_custom_file(output_fname_custom, f'avg_runtime_custom = {avg_runtime_custom/(total_step_limit/h)}\n')
+# write_to_custom_file(output_fname_custom, f'avg_runtime_custom = {avg_runtime_custom/(total_step_limit/h)}\n')
+avg_runtime_exPBS = sum(runtime_list)/len(runtime_list)
+write_to_custom_file(output_fname_custom, f'avg_runtime_custom = {avg_runtime_exPBS}\n')
 
-print(f'[MYCODE]: avg_runtime_custom = {avg_runtime_custom/(total_step_limit/h)}')
+print(f'[MYCODE]: avg_runtime_custom = {avg_runtime_exPBS}')
 
 print(f'throughput PBS = {throughput_PBS}')
 print(f'throughput exPBS = {throughput_exPBS}')
