@@ -95,8 +95,14 @@ for a in num_agents:
             
     output_file_name = f'./success_rate_{benchmark}_agents_{num_agents}.csv'
     with open(output_file_name, 'a') as f:
-        f.write(f'Average success rate,{(success_rate / total_num_of_experiments) * 100}\n')
-        f.write(f'Average success rate with experience,{(success_rate_with_experience / total_num_of_experiments_with_experience) * 100}\n')
+        if total_num_of_experiments>0:
+            f.write(f'Average success rate,{(success_rate / total_num_of_experiments) * 100}\n')
+        else:
+            f.write(f'Average success rate,{0 * 100}\n')
+        if total_num_of_experiments_with_experience>0:
+            f.write(f'Average success rate with experience,{(success_rate_with_experience / total_num_of_experiments_with_experience) * 100}\n')
+        else:
+            f.write(f'Average success rate with experience,{0 * 100}\n')
 
         f.write(f'Success count,{success_rate}\n')
         f.write(f'Total number of experiments,{total_num_of_experiments}\n')
