@@ -621,7 +621,7 @@ std::vector<std::vector<bool>> place_leaf_at_root   (const std::vector<std::vect
 
     // Find the leaf node with no outgoing edges
     auto isLeafNode = [numNodes](const std::vector<bool>& row) {
-        return std::count(row.begin(), row.end(), true) == 1;
+        return std::count(row.begin(), row.end(), true) == 0;
     };
 
     auto leafNodeIt = std::find_if(priorityMatrix.begin(), priorityMatrix.end(), isLeafNode);
@@ -657,12 +657,24 @@ std::vector<std::vector<bool>> place_leaf_at_root   (const std::vector<std::vect
 
     // Copy the original matrix, replacing the leaf node with the root
     for (int i = 0; i < numNodes; ++i) {
+        if(i == leafNodeIndex)
+        {
+            modifiedMatrix[i][rootNodeIndex] = true;
+            modifiedMatrix[rootNodeIndex][i] = false;
+        }
         for (int j = 0; j < numNodes; ++j) {
-            if (i == leafNodeIndex) {
-                // Leaf node becomes the new root
-                modifiedMatrix[rootNodeIndex][j] = priorityMatrix[i][j];
-            } else {
-                // Copy other nodes as is
+            // if (i == leafNodeIndex) {
+            //     // Leaf node becomes the new root
+            //     modifiedMatrix[rootNodeIndex][j] = priorityMatrix[i][j];
+            // } else {
+            //     // Copy other nodes as is
+            //     modifiedMatrix[i][j] = priorityMatrix[i][j];
+            // }
+            if(i==leafNodeIndex)
+            {
+                modifiedMatrix[j][i] = false;
+            }
+            else{
                 modifiedMatrix[i][j] = priorityMatrix[i][j];
             }
         }
