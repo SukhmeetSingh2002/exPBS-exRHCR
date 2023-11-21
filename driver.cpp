@@ -251,7 +251,8 @@ int main(int argc, char** argv) {
             string output_fname = "success_rate.csv";
             ofstream myfile;
             myfile.open(output_fname, ios::app);
-            myfile << "success rate," << res << ",experience," << vm["experience"].as<int>() << endl; 
+            // cout<< "success rate," << res << ",experience," << vm["experience"].as<int>() <<",fallbacks_in_current_experience," << icbs.fallbacks_in_current_experience << endl; 
+            myfile << "success rate," << res << ",experience," << vm["experience"].as<int>() <<",fallbacks_in_current_experience," << icbs.fallbacks_in_current_experience << endl; 
             myfile.close();
 
 			if (!icbs.node_stat.empty())

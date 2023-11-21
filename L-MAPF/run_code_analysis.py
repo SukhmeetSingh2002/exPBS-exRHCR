@@ -70,8 +70,8 @@ for a in num_agents:
 
     # now read the success_rate.csv file and print the success rate
     # Example of the file:
-    #   94   │ success rate,1,experience,1
-    #   95   │ success rate,1,experience,1
+    #   94   │ success rate,1,experience,0,fallbacks_in_current_experience,0
+    #   95   │ success rate,1,experience,1,fallbacks_in_current_experience,1
     file_data = []
     with open(f'./success_rate.csv', 'r') as f:
         lines = f.readlines()
@@ -82,19 +82,29 @@ for a in num_agents:
     num_agents = a
     success_rate = 0
     success_rate_with_experience = 0
+    success_rate_with_root_leaf = 0
     total_num_of_experiments = 0
     total_num_of_experiments_with_experience = 0
+    total_num_of_experiments_fallback_to_root_leaf = 0
+
+
     file_len = len(file_data)
     for i in range(file_len):
         if len(file_data[i]) < 4:
             continue
         success_rate += int(file_data[i][1])
         total_num_of_experiments += 1
-        if file_data[i][3] == '1\n':
+        if file_data[i][3] == '1':
             success_rate_with_experience += int(file_data[i][1])
             total_num_of_experiments_with_experience += 1
+            if file_data[i][5] == '1\n':
+                total_num_of_experiments_fallback_to_root_leaf += 1
+
+        if file_data[i][5] == '1\n':
+            success_rate_with_root_leaf += int(file_data[i][1])
             
     output_file_name = f'./success_rate_{benchmark}_agents_{num_agents}.csv'
+    output_file_name1 = f'./root_leaf_success_rate_{benchmark}_agents_{num_agents}.csv'
     with open(output_file_name, 'a') as f:
         if total_num_of_experiments>0:
             f.write(f'Average success rate,{(success_rate / total_num_of_experiments) * 100}\n')
@@ -104,6 +114,9 @@ for a in num_agents:
             f.write(f'Average success rate with experience,{(success_rate_with_experience / total_num_of_experiments_with_experience) * 100}\n')
         else:
             f.write(f'Average success rate with experience,{0 * 100}\n')
+
+        
+        f.write(f'Root leaf success count,{success_rate_with_root_leaf}\n')
 
         f.write(f'Success count,{success_rate}\n')
         f.write(f'Total number of experiments,{total_num_of_experiments}\n')
@@ -118,6 +131,10 @@ for a in num_agents:
         f.write(f'Number of ells,{len(ells)}\n')
         f.write(f'Number of hs,{len(hs)}\n')
         
+    with open(output_file_name1, 'a') as f:
+        f.write(f'Root leaf success rate,{(success_rate_with_root_leaf / total_num_of_experiments_fallback_to_root_leaf ) * 100}\n')
+
+
     # empty the success_rate.csv file
     with open(f'./success_rate.csv', 'w') as f:
         f.write('')
