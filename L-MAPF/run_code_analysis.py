@@ -4,14 +4,13 @@ benchmark = 'WAREHOUSE'  # 'WAREHOUSE'
 
 num_agents = [220, 200, 180, 160, 140, 120, 100]  # warehouse
 num_agents = num_agents[::-1]
-# num_agents = [100]  # warehouse
 # num_agents = [, 450, 400, 350, 300, 250, 200, 150, 100]  # sorting
 
 # deltas = [0, 1, 2]
 deltas = [1]
 
 # ells = [2, 5, 10, 20, 50, 1000]
-ells = [10]
+ells = [2]
 
 hs = [5]  # : warehouse-
 # deltas_per_h = {3: [0, 3, 4, 5, 6, 7], 10: [1, 2, 3]}
@@ -97,14 +96,14 @@ for a in num_agents:
         if file_data[i][3] == '1':
             success_rate_with_experience += int(file_data[i][1])
             total_num_of_experiments_with_experience += 1
-            if file_data[i][5] == '1\n':
+            if file_data[i][5] != '0\n':
                 total_num_of_experiments_fallback_to_root_leaf += 1
 
         if file_data[i][5] == '1\n':
             success_rate_with_root_leaf += int(file_data[i][1])
             
     output_file_name = f'./success_rate_{benchmark}_agents_{num_agents}.csv'
-    output_file_name1 = f'./root_leaf_success_rate_{benchmark}_agents_{num_agents}.csv'
+    output_file_name1 = f'./root_leaf_success_rate_{benchmark}_agents.csv'
     with open(output_file_name, 'a') as f:
         if total_num_of_experiments>0:
             f.write(f'Average success rate,{(success_rate / total_num_of_experiments) * 100}\n')
@@ -117,6 +116,7 @@ for a in num_agents:
 
         
         f.write(f'Root leaf success count,{success_rate_with_root_leaf}\n')
+        f.write(f'Total number of experiments with fallback to root leaf,{total_num_of_experiments_fallback_to_root_leaf}\n')
 
         f.write(f'Success count,{success_rate}\n')
         f.write(f'Total number of experiments,{total_num_of_experiments}\n')
@@ -132,7 +132,7 @@ for a in num_agents:
         f.write(f'Number of hs,{len(hs)}\n')
         
     with open(output_file_name1, 'a') as f:
-        f.write(f'Root leaf success rate,{(success_rate_with_root_leaf / total_num_of_experiments_fallback_to_root_leaf ) * 100}\n')
+        f.write(f'Agents,{num_agents},Root leaf success rate,{(success_rate_with_root_leaf / total_num_of_experiments_fallback_to_root_leaf ) * 100}\n')
 
 
     # empty the success_rate.csv file
