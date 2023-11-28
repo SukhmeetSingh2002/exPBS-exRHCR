@@ -38,7 +38,7 @@ To Run the Experiment:
 cd L-MAPF; python3 run_code_analysis.py
 ```
 
-This generates the result CSVs in the directory `L-MAPF`. Before running the experiment again, make sure to delete the CSVs generated in the previous run.
+This generates the result *CSVs* in the directory `L-MAPF`. Before running the experiment again, make sure to **save** the *CSVs* generated in the previous run.
 <!-- * Run PBS or exPBS:
 
   Use the command
