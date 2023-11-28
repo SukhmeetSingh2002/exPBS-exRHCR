@@ -1,14 +1,23 @@
-# exPBS + exRHCR
+# exPBS + exRHCR  - Enhancement: Depth Limit
 exPBS and exRHCR implementation [Madar et al., 2022][^1].
 <!-- --- -->
+## Introduction
+This repository contains a Depth Limit variation of the original implementation of exPBS and exRHCR by Madar et al. With a view on memory efficiency, we propose the usage of Iterative Deepening Search. In this approach, we maintain a local depth limit and increment it every time it is reached in the search, until its value reaches a pre-specified global depth limit. This way, we do not traverse in any branch indefinitely, and can find the solution, if it exists, with greater memory efficiency.
 
-## Abstract
+## Code Files Modified
+* `driver.cpp` - The main file that runs the experiments. The `main` function has been modified to call the function `GICBSSearch::runGICBSSearchWrapper()` instead of `GICBSSearch::runGICBSSearch()`.
+* `GICBSSearch.cpp`
+- The `GICBSSearch::runGICBSSearch()` function has been modified to include the depth limit parameter.
+- `GICBSSearch::runGICBSSearchWrapper()` and `GICBSSearch::resetGICBSSearch()` have been added to perform Iterative Deepening Search.
+* `GICBSSearch.h` - The `GICBSSearch` class has been modified to include the parameters - `HL_DFS_height_limit`, `HL_DFS_height_limit_global`, and `HL_DFS_height_limit_increment`.
+* `run_code_analysis.py` - The `run_code_analysis.py` file has been included to perform a customised version of the original experiment.
+<!-- ## Abstract
 In Lifelong Multi-Agent Path Finding (L-MAPF) a team of agents performs a stream of tasks consisting of multiple locations to be visited by the agents on a shared graph while avoiding collisions with one another.
 L-MAPF is typically tackled by partitioning it into *multiple consecutive*, and hence *similar*, "one-shot" MAPF queries, as in the Rolling-Horizon Collision Resolution (RHCR) algorithm [Li et al., 2021][^2].
 Therefore, a solution to one query informs the next query, which leads to similarity with respect to the agents' start and goal positions, and how collisions need to be resolved from one query to the next. Thus, experience from solving one MAPF query can potentially be used to speedup solving the next one.
 Despite this intuition, current L-MAPF planners solve consecutive MAPF queries from scratch.
 In this paper, we introduce a new RHCR-inspired approach called exRHCR, which exploits experience in its constituent MAPF queries. In particular, exRHCR employs a new extension of Priority-Based Search (PBS) [Ma et al., 2019][^3], a state-of-the-art MAPF solver. Our extension, called exPBS, allows to warm-start the search with the priorities between agents used by PBS in the previous MAPF instances.
-We demonstrate empirically that exRHCR solves L-MAPF instances up to 39% faster than RHCR, and has the potential to increase system throughput for given task streams by increasing the number of agents a planner can cope with for a given time budget.
+We demonstrate empirically that exRHCR solves L-MAPF instances up to 39% faster than RHCR, and has the potential to increase system throughput for given task streams by increasing the number of agents a planner can cope with for a given time budget. -->
 
 
 ## Libraries Required
@@ -18,13 +27,19 @@ We demonstrate empirically that exRHCR solves L-MAPF instances up to 39% faster 
 ## Credits
 Original PBS implementation adopted from [Hang Ma](https://www.cs.sfu.ca/~hangma/).
 
-## Code
+## Usage
 Compile in Ubuntu 20:
 ```
 make executable
 ```
 
-* Run PBS or exPBS:
+To Run the Experiment:
+```
+cd L-MAPF; python3 run_code_analysis.py
+```
+
+This generates the result CSVs in the directory `L-MAPF`. Before running the experiment again, make sure to delete the CSVs generated in the previous run.
+<!-- * Run PBS or exPBS:
 
   Use the command
   ```shell
@@ -62,7 +77,7 @@ make executable
       * `c`: (int, 1 or 0) use stored example or create a new one and save (overwries existing files)
       * `d`: (int) delta, the lookahead exRHCR parameter
       * `t`: (int) test number
-      * `l`: (int) the width dimit parameter for WL-DFS 
+      * `l`: (int) the width dimit parameter for WL-DFS  -->
  
  
 ## References
