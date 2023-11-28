@@ -1,14 +1,17 @@
-# exPBS + exRHCR
+# exPBS + exRHCR  - Enhancement: Place Leaf at Root
 exPBS and exRHCR implementation [Madar et al., 2022][^1].
 <!-- --- -->
+## Introduction
+The "Place Leaf at Root" policy is designed to address situations where the failure of the search on a given priority ordering may result from insufficient priority given to a specific agent. This policy dynamically adjusts the priority ordering during the search by shifting the position of the least-prioritized agent (L) to the position of the most-prioritized agent (R). This adjustment allows the least-prioritized agent to receive the highest priority, potentially resolving conflicts and improving the chances of finding a solution.
 
-## Abstract
-In Lifelong Multi-Agent Path Finding (L-MAPF) a team of agents performs a stream of tasks consisting of multiple locations to be visited by the agents on a shared graph while avoiding collisions with one another.
-L-MAPF is typically tackled by partitioning it into *multiple consecutive*, and hence *similar*, "one-shot" MAPF queries, as in the Rolling-Horizon Collision Resolution (RHCR) algorithm [Li et al., 2021][^2].
-Therefore, a solution to one query informs the next query, which leads to similarity with respect to the agents' start and goal positions, and how collisions need to be resolved from one query to the next. Thus, experience from solving one MAPF query can potentially be used to speedup solving the next one.
-Despite this intuition, current L-MAPF planners solve consecutive MAPF queries from scratch.
-In this paper, we introduce a new RHCR-inspired approach called exRHCR, which exploits experience in its constituent MAPF queries. In particular, exRHCR employs a new extension of Priority-Based Search (PBS) [Ma et al., 2019][^3], a state-of-the-art MAPF solver. Our extension, called exPBS, allows to warm-start the search with the priorities between agents used by PBS in the previous MAPF instances.
-We demonstrate empirically that exRHCR solves L-MAPF instances up to 39% faster than RHCR, and has the potential to increase system throughput for given task streams by increasing the number of agents a planner can cope with for a given time budget.
+## Code Files Modified
+
+* `GICBSSearch.cpp` - Added a condition in `GICBSSearch::runGICBSSearch()` function to modify the current priority ordering before fallback to the original PBS if no solution is found in *Place Leaf at Root* Policy.
+* `GICBSSearch.h` - Initialized `fallbacks_in_current_experience ` to `zero`
+* `utils_functions.cpp` - Function `place_leaf_at_root` contains the logic of increasing the priority of the least-prioritized agent (L) to the most-prioritized agent (R) position.
+* `utils_functions.h` - Declared `print_bool_matrix`
+* `run_code_analysis.py` - The `run_code_analysis.py` file has been included to perform a customised version of the original experiment.
+
 
 
 ## Libraries Required
@@ -18,13 +21,19 @@ We demonstrate empirically that exRHCR solves L-MAPF instances up to 39% faster 
 ## Credits
 Original PBS implementation adopted from [Hang Ma](https://www.cs.sfu.ca/~hangma/).
 
-## Code
+## Usage
 Compile in Ubuntu 20:
 ```
 make executable
 ```
 
-* Run PBS or exPBS:
+To Run the Experiment:
+```bash
+cd L-MAPF && python3 run_code_analysis.py
+```
+
+This generates the result *CSVs* in the directory `L-MAPF`. Before running the experiment again, make sure to **save** the *CSVs* generated in the previous run.
+<!-- * Run PBS or exPBS:
 
   Use the command
   ```shell
@@ -62,7 +71,7 @@ make executable
       * `c`: (int, 1 or 0) use stored example or create a new one and save (overwries existing files)
       * `d`: (int) delta, the lookahead exRHCR parameter
       * `t`: (int) test number
-      * `l`: (int) the width dimit parameter for WL-DFS 
+      * `l`: (int) the width dimit parameter for WL-DFS  -->
  
  
 ## References
