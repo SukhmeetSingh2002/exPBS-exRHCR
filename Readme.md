@@ -7,8 +7,8 @@ This repository contains a Depth Limit variation of the original implementation 
 ## Code Files Modified
 * `driver.cpp` - The main file that runs the experiments. The `main` function has been modified to call the function `GICBSSearch::runGICBSSearchWrapper()` instead of `GICBSSearch::runGICBSSearch()`.
 * `GICBSSearch.cpp`
-- The `GICBSSearch::runGICBSSearch()` function has been modified to include the depth limit parameter.
-- `GICBSSearch::runGICBSSearchWrapper()` and `GICBSSearch::resetGICBSSearch()` have been added to perform Iterative Deepening Search.
+  - The `GICBSSearch::runGICBSSearch()` function has been modified to include the depth limit parameter.
+  - `GICBSSearch::runGICBSSearchWrapper()` and `GICBSSearch::resetGICBSSearch()` have been added to perform Iterative Deepening Search.
 * `GICBSSearch.h` - The `GICBSSearch` class has been modified to include the parameters - `HL_DFS_height_limit`, `HL_DFS_height_limit_global`, and `HL_DFS_height_limit_increment`.
 * `run_code_analysis.py` - The `run_code_analysis.py` file has been included to perform a customised version of the original experiment.
 <!-- ## Abstract
